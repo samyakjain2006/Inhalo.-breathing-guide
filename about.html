@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en" class="light-theme">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About | Inhalo.</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    .music-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background-color: var(--primary);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 100;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    
+    .music-toggle:hover {
+      transform: scale(1.1);
+      background-color: var(--primary-light);
+    }
+    
+    .music-toggle.off {
+      background-color: var(--text-light);
+    }
+    
+    .music-toggle.off::after {
+      content: '';
+      position: absolute;
+      width: 2px;
+      height: 24px;
+      background-color: white;
+      transform: rotate(45deg);
+    }
+    
+    /* Enhanced about page styling */
+    .about-container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+    
+    .about-container h1 {
+      margin-bottom: 2rem;
+      font-size: 2.5rem;
+      background: linear-gradient(90deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      width: fit-content;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fade-in 0.8s ease forwards;
+    }
+    
+    @keyframes fade-in {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .about-paragraph {
+      position: relative;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1.5rem;
+      background-color: rgba(var(--bg-rgb, 255, 255, 255), 0.5);
+      backdrop-filter: blur(10px);
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      width: 100%;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.6s ease;
+    }
+    
+    .about-paragraph.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .about-paragraph p {
+      line-height: 1.7;
+      margin-bottom: 0;
+    }
+    
+    .highlight-text {
+      display: block;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 500;
+      margin: 2rem 0;
+      padding: 1.5rem;
+      background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.1), rgba(var(--primary-rgb), 0.05));
+      border-radius: 0.5rem;
+      border-left: 4px solid var(--primary);
+      width: 100%;
+      transform: scale(0.95);
+      opacity: 0;
+      transition: all 0.8s ease;
+    }
+    
+    .highlight-text.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    .back-btn-container {
+      margin-top: 2rem;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: fade-in 0.6s ease 1.2s forwards;
+    }
+    
+    /* Breathing animation in corner */
+    .corner-orb-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 90;
+      pointer-events: none;
+    }
+    
+    .corner-orb {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-light), var(--primary));
+      opacity: 0.8;
+      animation: breathe 5s infinite ease-in-out;
+    }
+    
+    @keyframes breathe {
+      0%, 100% {
+        transform: scale(0.8);
+        opacity: 0.6;
+      }
+      50% {
+        transform: scale(1.2);
+        opacity: 0.9;
+      }
+    }
+    
+    /* Reading progress bar */
+    .progress-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: transparent;
+      z-index: 9999;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(to right, var(--primary), var(--primary-light));
+      width: 0%;
+      transition: width 0.2s ease;
+    }
+    
+    /* Interactive breathe element */
+    .breathe-text {
+      position: fixed;
+      left: 50%;
+      bottom: 30px;
+      transform: translateX(-50%);
+      font-size: 1rem;
+      color: var(--text-light);
+      opacity: 0.7;
+      text-align: center;
+      pointer-events: none;
+      animation: text-breathe 5s infinite ease-in-out;
+    }
+    
+    @keyframes text-breathe {
+      0%, 100% {
+        opacity: 0.3;
+        letter-spacing: 0;
+      }
+      50% {
+        opacity: 0.9;
+        letter-spacing: 2px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button id="music-toggle" class="music-toggle" title="Music: Off">♫</button>
+  
+  <div class="progress-container">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+  
+  <nav class="navbar">
+    <a href="index.html" class="logo">Inhalo.</a>
+    <div class="nav-links">
+      <a href="exercises.html" class="nav-link">Start</a>
+      <a href="blog.html" class="nav-link">Blog</a>
+      <a href="about.html" class="nav-link active">About</a>
+      <button id="theme-toggle" class="theme-btn">◐</button>
+    </div>
+  </nav>
+
+  <main class="about-container">
+    <h1>About Inhalo.</h1>
+    
+    <div class="about-paragraph" data-delay="0">
+      <p>I made Inhalo for people those who forget to breathe while buried in code, cramming for finals, or racing deadlines...glued to their screens for hours on end. Like me!</p>
+    </div>
+    
+    <div class="about-paragraph" data-delay="200">
+      <p>My goal? To make taking a healthy break feel effortless. Through simple, calming, guided breathing animations, Inhalo. helps you pause, reset, and reconnect with your breath—just for a minute or two.</p>
+    </div>
+    
+    <div class="about-paragraph" data-delay="400">
+      <p>I built Inhalo. during a caffeine-fueled weekend for a hackathon sprint, designed for anyone who needs to take a step back—so they can move forward with clarity.</p>
+    </div>
+    
+    <div class="highlight-text">
+      "Inhalo. When focus meets stillness."
+    </div>
+    
+    <div class="back-btn-container">
+      <a href="index.html" class="back-btn">← Home</a>
+    </div>
+  </main>
+  
+  <div class="corner-orb-container">
+    <div class="corner-orb"></div>
+  </div>
+  
+  <div class="breathe-text">breathe in... breathe out...</div>
+
+  <script src="js/main.js"></script>
+  <script src="js/music.js"></script>
+  <script>
+    // Theme toggle functionality - only light/dark modes
+    const themeToggle = document.getElementById('theme-toggle');
+    
+    // Check for saved theme preference
+    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+    
+    // Apply saved theme
+    if (savedDarkMode) {
+      document.documentElement.classList.remove('light-theme');
+      document.documentElement.classList.add('dark-theme');
+    } else {
+      document.documentElement.classList.remove('dark-theme');
+      document.documentElement.classList.add('light-theme');
+    }
+    
+    // Theme toggle button handling
+    themeToggle.addEventListener('click', () => {
+      const isDark = document.documentElement.classList.contains('dark-theme');
+      
+      if (isDark) {
+        document.documentElement.classList.remove('dark-theme');
+        document.documentElement.classList.add('light-theme');
+        localStorage.setItem('darkMode', 'false');
+      } else {
+        document.documentElement.classList.remove('light-theme');
+        document.documentElement.classList.add('dark-theme');
+        localStorage.setItem('darkMode', 'true');
+      }
+    });
+    
+    // Initialize animations on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      initPageAnimations();
+    });
+    
+    function initPageAnimations() {
+      const paragraphs = document.querySelectorAll('.about-paragraph');
+      const highlightText = document.querySelector('.highlight-text');
+      const progressBar = document.getElementById('progress-bar');
+      
+      // Progress bar
+      window.addEventListener('scroll', () => {
+        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (scrollTop / scrollHeight) * 100;
+        
+        if (progressBar) {
+          progressBar.style.width = scrolled + '%';
+        }
+      });
+      
+      // Create intersection observer
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            // Get delay if it exists
+            const delay = entry.target.dataset.delay || 0;
+            
+            // Apply animation with delay
+            setTimeout(() => {
+              entry.target.classList.add('visible');
+            }, parseInt(delay));
+          }
+        });
+      }, { threshold: 0.2 });
+      
+      // Observe paragraphs
+      paragraphs.forEach(para => {
+        observer.observe(para);
+      });
+      
+      // Observe highlight text
+      if (highlightText) {
+        observer.observe(highlightText);
+      }
+    }
+  </script>
+</body>
+</html>

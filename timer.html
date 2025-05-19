@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en" class="light-theme">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timer | Inhalo.</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/themes.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* Tooltip styles */
+    .tooltip {
+      position: relative;
+      display: inline-block;
+      cursor: help;
+      margin-left: 0.5rem;
+      color: var(--text-light);
+    }
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 300px;
+      background-color: var(--card-bg);
+      color: var(--text);
+      text-align: left;
+      border-radius: 6px;
+      padding: 8px 12px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--border);
+      font-weight: normal;
+      font-size: 0.9rem;
+    }
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+    
+    /* Layout improvements to prevent overlapping and scrolling */
+    .breathing-container {
+      display: grid;
+      grid-template-rows: auto auto auto;
+      row-gap: 1rem;
+      justify-items: center;
+      min-height: calc(100vh - 80px);
+      max-height: 100vh;
+      padding: 0.5rem 2rem 1rem;
+      box-sizing: border-box;
+    }
+    
+    .orb-container {
+      position: relative;
+      width: 280px;
+      height: 280px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 10px 0 15px;
+      overflow: visible;
+    }
+    
+    .timer-display {
+      background-color: rgba(var(--bg-rgb, 255, 255, 255), 0.6);
+      backdrop-filter: blur(5px);
+      padding: 1rem;
+      border-radius: 1rem;
+      width: 250px;
+      text-align: center;
+      z-index: 10;
+    }
+    
+    .exercise-title {
+      margin-bottom: 0.5rem;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 0.75rem;
+    }
+    
+    .control-btn {
+      flex: 1;
+      max-width: 100px;
+    }
+    
+    /* Adjust orb size for both styles */
+    .orb {
+      width: 160px;
+      height: 160px;
+    }
+    
+    /* Gradient circle sizing adjustment */
+    .orb.gradient-circle {
+      width: 220px;
+      height: 220px;
+      max-width: 100%;
+      max-height: 100%;
+    }
+    
+    /* Limit the maximum scale for animations */
+    .orb.breathing-in, 
+    .orb.breathing-hold {
+      transform: scale(1.2);
+    }
+    
+    /* Reduce vertical spacing */
+    #phase-indicator {
+      margin-bottom: 0.25rem;
+    }
+    
+    .timer {
+      margin-bottom: 0.5rem;
+    }
+    
+    /* Custom variables for the gradient circle animation */
+    :root {
+      --bg-darker: #010f1c;
+    }
+    
+    .dark-theme {
+      --bg-darker: #030c14;
+    }
+    
+    /* Media query for responsive adjustments */
+    @media (max-width: 767px) {
+      /* Adjust orb container spacing on mobile */
+      .orb-container {
+        margin: 5px 0 10px;
+      }
+    }
+    
+    /* Hamburger menu styles */
+    .hamburger-menu {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 24px;
+      height: 18px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      position: relative;
+    }
+    
+    .hamburger-menu .line {
+      width: 100%;
+      height: 2px;
+      background-color: var(--text);
+      transition: all 0.3s ease;
+      position: absolute;
+    }
+    
+    .hamburger-menu .line:nth-child(1) {
+      top: 0;
+    }
+    
+    .hamburger-menu .line:nth-child(2) {
+      top: 8px;
+    }
+    
+    .hamburger-menu .line:nth-child(3) {
+      top: 16px;
+    }
+    
+    .hamburger-menu.active .line:nth-child(1) {
+      top: 8px;
+      transform: rotate(45deg);
+    }
+    
+    .hamburger-menu.active .line:nth-child(2) {
+      opacity: 0;
+    }
+    
+    .hamburger-menu.active .line:nth-child(3) {
+      top: 8px;
+      transform: rotate(-45deg);
+    }
+    
+    /* Theme button styles */
+    .theme-btn {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: var(--text-light);
+      transition: transform 0.3s ease;
+      margin-right: 1rem;
+    }
+    
+    .theme-btn:hover {
+      transform: rotate(180deg);
+    }
+    
+    .nav-links {
+      display: flex;
+      align-items: center;
+    }
+    
+    .orb.gradient-circle .pointer-container {
+      position: absolute;
+      top: -40px;
+      left: 140px;
+      width: 20px;
+      height: 190px;
+      animation: rotate 7.5s linear forwards infinite;
+      transform-origin: bottom center;
+      z-index: 2;
+    }
+    
+    /* Central phase text styling */
+    .phase-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.5rem;
+      font-weight: 300;
+      color: var(--text-light);
+      text-align: center;
+      pointer-events: none;
+      opacity: 0.6;
+      z-index: 10;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    /* Instruction popup styling */
+    .instruction-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    
+    .instruction-popup.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .instruction-content {
+      background-color: var(--card-bg);
+      padding: 2rem;
+      border-radius: 1rem;
+      text-align: center;
+      max-width: 90%;
+      width: 400px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+    
+    .instruction-content h3 {
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+    
+    .instruction-content p {
+      margin-bottom: 1.5rem;
+      font-size: 1.1rem;
+      line-height: 1.5;
+    }
+    
+    .instruction-content button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .instruction-content button:hover {
+      background-color: var(--primary-light);
+    }
+    
+    /* Nostril instruction overlay */
+    .nostril-instruction {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(var(--bg-rgb, 255, 255, 255), 0.9);
+      backdrop-filter: blur(5px);
+      padding: 1rem 1.5rem;
+      border-radius: 1rem;
+      font-size: 1.1rem;
+      color: var(--text);
+      text-align: center;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      z-index: 50;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+      pointer-events: none;
+    }
+    
+    .nostril-instruction.active {
+      opacity: 1;
+    }
+    
+    /* Cycle counter display - repositioned */
+    .cycle-counter {
+      position: absolute;
+      bottom: -30px;
+      right: 10px;
+      background-color: rgba(var(--bg-rgb, 255, 255, 255), 0.8);
+      backdrop-filter: blur(5px);
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      font-size: 0.9rem;
+      color: var(--text);
+      font-weight: 500;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      z-index: 20;
+      text-align: center;
+      transform: translateX(0);
+    }
+    
+    /* Mobile adjustments for cycle counter */
+    @media (max-width: 767px) {
+      .cycle-counter {
+        bottom: -25px;
+        right: 5px;
+        padding: 0.3rem 0.8rem;
+        font-size: 0.8rem;
+      }
+    }
+    
+    /* Cycle selection popup */
+    .cycle-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 1001; /* Higher than instruction popup */
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    
+    .cycle-popup.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .cycle-content {
+      background-color: var(--card-bg);
+      padding: 2rem;
+      border-radius: 1rem;
+      text-align: center;
+      max-width: 90%;
+      width: 400px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+    
+    .cycle-content h3 {
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+    }
+    
+    .slider-container {
+      margin: 1.5rem 0;
+      text-align: center;
+    }
+    
+    .slider-container input {
+      width: 100%;
+      margin-bottom: 1rem;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 8px;
+      background: var(--border);
+      border-radius: 5px;
+      outline: none;
+    }
+    
+    .slider-container input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease;
+    }
+    
+    .slider-container input::-webkit-slider-thumb:hover {
+      background: var(--primary-light);
+      transform: scale(1.1);
+    }
+    
+    .slider-container input::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease;
+    }
+    
+    .slider-container input::-moz-range-thumb:hover {
+      background: var(--primary-light);
+      transform: scale(1.1);
+    }
+    
+    .cycle-value {
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 1rem 0;
+    }
+    
+    .cycle-unit {
+      font-size: 1rem;
+      color: var(--text-light);
+      margin-left: 0.5rem;
+    }
+    
+    .cycle-content button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    
+    .cycle-content button:hover {
+      background-color: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Exercise completion popup */
+    .completion-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 1002; /* Higher than other popups */
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+    
+    .completion-popup.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .completion-content {
+      background-color: var(--card-bg);
+      padding: 2.5rem;
+      border-radius: 1rem;
+      text-align: center;
+      max-width: 90%;
+      width: 450px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      transform: scale(0.9);
+      opacity: 0;
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    
+    .completion-popup.active .completion-content {
+      transform: scale(1);
+      opacity: 1;
+    }
+    
+    .completion-content h2 {
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+      font-size: 1.8rem;
+    }
+    
+    .completion-message {
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: var(--text);
+    }
+    
+    .completion-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+    
+    .completion-btn {
+      padding: 0.8rem 1.5rem;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    
+    .restart-btn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+    }
+    
+    .restart-btn:hover {
+      background-color: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .home-btn {
+      background-color: transparent;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+    }
+    
+    .home-btn:hover {
+      background-color: rgba(var(--primary-rgb), 0.1);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Animation for the completion icon */
+    .completion-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
+      position: relative;
+    }
+    
+    .completion-circle {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.2), rgba(var(--primary-rgb), 0.1));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: pulse 2s infinite ease-in-out;
+    }
+    
+    .completion-check {
+      width: 40%;
+      height: 40%;
+      position: relative;
+    }
+    
+    .completion-check::before,
+    .completion-check::after {
+      content: '';
+      position: absolute;
+      background-color: var(--primary);
+      border-radius: 3px;
+    }
+    
+    .completion-check::before {
+      width: 40%;
+      height: 15%;
+      bottom: 25%;
+      left: 5%;
+      transform: rotate(45deg);
+    }
+    
+    .completion-check::after {
+      width: 80%;
+      height: 15%;
+      bottom: 40%;
+      right: 0;
+      transform: rotate(-45deg);
+      transform-origin: bottom right;
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0.4);
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(var(--primary-rgb), 0);
+      }
+    }
+    
+    @keyframes rotate {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="exercises.html" class="back-btn">← Exercises</a>
+    <div class="nav-links">
+      <button id="settings-toggle" class="hamburger-menu">
+        <span class="line"></span>
+        <span class="line"></span>
+        <span class="line"></span>
+      </button>
+    </div>
+  </nav>
+
+  <div id="settings-menu" class="settings-menu hidden">
+    <div class="setting-group">
+      <label>Animation Style</label>
+      <select id="animation-style">
+        <option value="default">Ice</option>
+        <option value="gradient-circle">Orbit</option>
+      </select>
+    </div>
+    <div class="setting-group">
+      <label>Theme</label>
+      <select id="theme-style">
+        <option value="light-theme">Default Light</option>
+        <option value="dark-theme">Default Dark</option>
+        <option value="theme-kyoto">Kyoto</option>
+        <option value="theme-night-sky">Night Sky</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="breathing-container">
+    <div class="exercise-title">
+      <h2 id="current-exercise">4-7-8 Breathing</h2>
+    </div>
+    
+    <div class="orb-container">
+      <div id="breathing-orb" class="orb default"></div>
+      <div id="phase-text" class="phase-text"></div>
+      <div id="nostril-instruction" class="nostril-instruction"></div>
+      <div id="cycle-counter" class="cycle-counter">Cycle: <span id="current-cycle">1</span>/<span id="total-cycles">3</span></div>
+    </div>
+    
+    <div class="timer-display">
+      <p id="phase-indicator">Ready to begin</p>
+      <div id="timer" class="timer">--:--</div>
+      
+      <div class="controls">
+        <button id="start-btn" class="control-btn">Start</button>
+        <button id="reset-btn" class="control-btn">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instruction popup -->
+  <div id="instruction-popup" class="instruction-popup">
+    <div class="instruction-content">
+      <h3>Nadi Sodhana Instructions</h3>
+      <p>For this exercise, please use your right hand to control your breathing through alternating nostrils.</p>
+      <p>Place your thumb over your right nostril and your ring finger over your left nostril.</p>
+      <button id="start-exercise-btn">Start Exercise</button>
+    </div>
+  </div>
+
+  <!-- Cycle selection popup -->
+  <div id="cycle-popup" class="cycle-popup">
+    <div class="cycle-content">
+      <h3>How many cycles would you like to do?</h3>
+      <p>Select the number of complete breathing cycles to perform.</p>
+      
+      <div class="slider-container">
+        <input type="range" id="cycle-slider" min="1" max="10" value="3" class="slider">
+        <div class="cycle-value"><span id="cycle-value-display">3</span><span class="cycle-unit">cycles</span></div>
+      </div>
+      
+      <button id="cycle-start-btn">Begin</button>
+    </div>
+  </div>
+  
+  <!-- Exercise completion popup -->
+  <div id="completion-popup" class="completion-popup">
+    <div class="completion-content">
+      <div class="completion-icon">
+        <div class="completion-circle">
+          <div class="completion-check"></div>
+        </div>
+      </div>
+      <h2>Great job!</h2>
+      <p class="completion-message">You've completed your breathing exercise. How do you feel now?</p>
+      <div class="completion-buttons">
+        <button id="restart-btn" class="completion-btn restart-btn">Do It Again</button>
+        <button id="home-btn" class="completion-btn home-btn">Back to Home</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Only show the instruction popup for Nadi Sodhana exercise
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const exercise = urlParams.get('exercise') || '4-7-8';
+      const instructionPopup = document.getElementById('instruction-popup');
+      const cycleCounter = document.getElementById('cycle-counter');
+      
+      // Initially hide cycle counter
+      cycleCounter.style.display = 'none';
+      
+      // Only show Nadi Sodhana popup if needed
+      if (exercise !== 'nadi-sodhana') {
+        instructionPopup.style.display = 'none';
+      }
+      
+      // Add beforeunload event handler for tab closing
+      window.addEventListener('beforeunload', function(e) {
+        // Only trigger if the exercise is active
+        if (window.isRunning) {
+          const confirmationMessage = 'Leaving so soon? Taking regular breathing breaks helps build a healthy habit.';
+          
+          // Standard way to show confirmation dialog
+          e.returnValue = confirmationMessage;
+          return confirmationMessage;
+        }
+      });
+    });
+  </script>
+
+  <script src="js/main.js"></script>
+  <script src="js/timer.js"></script>
+</body>
+</html>
