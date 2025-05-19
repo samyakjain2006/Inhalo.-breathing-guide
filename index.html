@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en" class="light-theme">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inhalo. | When Focus Meets Stillness</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* Define missing primary-rgb variable */
+    :root {
+      --primary-rgb: 99, 102, 241;
+    }
+    
+    .dark-theme {
+      --primary-rgb: 129, 140, 248;
+    }
+    
+    .theme-kyoto {
+      --primary-rgb: 209, 157, 113;
+    }
+    
+    .theme-night-sky {
+      --primary-rgb: 101, 115, 195;
+    }
+    
+    .music-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background-color: var(--primary);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 100;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    
+    .music-toggle:hover {
+      transform: scale(1.1);
+      background-color: var(--primary-light);
+    }
+    
+    .music-toggle.off {
+      background-color: var(--text-light);
+    }
+    
+    .music-toggle.off::after {
+      content: '';
+      position: absolute;
+      width: 2px;
+      height: 24px;
+      background-color: white;
+      transform: rotate(45deg);
+    }
+    
+    /* Wave animation background - fixed visibility */
+    .wave-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: -1;
+    }
+    
+    .wave {
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      left: -50%;
+      top: -100%;
+      border-radius: 40%;
+    }
+    
+    /* Fixed wave colors with fallback colors */
+    .wave:nth-child(1) {
+      background: linear-gradient(744deg, rgba(99, 102, 241, 0.6), rgba(99, 102, 241, 0.3) 60%, rgba(99, 102, 241, 0.1));
+      opacity: 0.6;
+      animation: wave 55s infinite linear;
+    }
+    
+    .wave:nth-child(2) {
+      background: linear-gradient(744deg, rgba(99, 102, 241, 0.5), rgba(99, 102, 241, 0.2) 60%, rgba(99, 102, 241, 0.1));
+      opacity: 0.4;
+      top: -80%;
+      animation: wave 50s infinite linear;
+    }
+    
+    .wave:nth-child(3) {
+      background: linear-gradient(744deg, rgba(99, 102, 241, 0.4), rgba(99, 102, 241, 0.2) 60%, rgba(99, 102, 241, 0.1));
+      opacity: 0.3;
+      top: -60%;
+      animation: wave 45s infinite linear;
+    }
+    
+    /* Dark theme adjustments */
+    .dark-theme .wave:nth-child(1) {
+      background: linear-gradient(744deg, rgba(129, 140, 248, 0.4), rgba(129, 140, 248, 0.2) 60%, rgba(129, 140, 248, 0.1));
+    }
+    
+    .dark-theme .wave:nth-child(2) {
+      background: linear-gradient(744deg, rgba(129, 140, 248, 0.3), rgba(129, 140, 248, 0.2) 60%, rgba(129, 140, 248, 0.1));
+    }
+    
+    .dark-theme .wave:nth-child(3) {
+      background: linear-gradient(744deg, rgba(129, 140, 248, 0.2), rgba(129, 140, 248, 0.1) 60%, rgba(129, 140, 248, 0.05));
+    }
+    
+    /* Kyoto theme adjustments */
+    .theme-kyoto .wave:nth-child(1) {
+      background: linear-gradient(744deg, rgba(209, 157, 113, 0.4), rgba(209, 157, 113, 0.2) 60%, rgba(209, 157, 113, 0.1));
+    }
+    
+    .theme-kyoto .wave:nth-child(2) {
+      background: linear-gradient(744deg, rgba(209, 157, 113, 0.3), rgba(209, 157, 113, 0.2) 60%, rgba(209, 157, 113, 0.1));
+    }
+    
+    .theme-kyoto .wave:nth-child(3) {
+      background: linear-gradient(744deg, rgba(209, 157, 113, 0.2), rgba(209, 157, 113, 0.1) 60%, rgba(209, 157, 113, 0.05));
+    }
+    
+    /* Night Sky theme adjustments */
+    .theme-night-sky .wave:nth-child(1) {
+      background: linear-gradient(744deg, rgba(101, 115, 195, 0.4), rgba(101, 115, 195, 0.2) 60%, rgba(101, 115, 195, 0.1));
+    }
+    
+    .theme-night-sky .wave:nth-child(2) {
+      background: linear-gradient(744deg, rgba(101, 115, 195, 0.3), rgba(101, 115, 195, 0.2) 60%, rgba(101, 115, 195, 0.1));
+    }
+    
+    .theme-night-sky .wave:nth-child(3) {
+      background: linear-gradient(744deg, rgba(101, 115, 195, 0.2), rgba(101, 115, 195, 0.1) 60%, rgba(101, 115, 195, 0.05));
+    }
+    
+    @keyframes wave {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    
+    /* Redesigned hero and tagline layout */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      min-height: calc(100vh - 80px);
+      padding: 2rem;
+    }
+    
+    .hero h1 {
+      font-size: 3rem;
+      margin-bottom: 2rem;
+      font-weight: 700;
+    }
+    
+    /* New tagline container with static height */
+    .tagline-container {
+      height: 1.8em;
+      margin-bottom: 2.5rem;
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      overflow: hidden;
+    }
+    
+    /* Tagline styling for smooth transitions */
+    .tagline-text {
+      position: absolute;
+      width: 100%;
+      font-size: 1.2rem;
+      color: var(--text-light);
+      text-align: center;
+      transition: opacity 2s ease, transform 2s ease;
+      opacity: 0;
+      transform: translateY(20px);
+      left: 0;
+      top: 0;
+    }
+    
+    .tagline-text.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .tagline-text.exiting {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+  </style>
+</head>
+<body>
+  <!-- Wave background animation -->
+  <div class="wave-background">
+    <div class="wave"></div>
+    <div class="wave"></div>
+    <div class="wave"></div>
+  </div>
+  
+  <button id="music-toggle" class="music-toggle" title="Music: Off">♫</button>
+  
+  <nav class="navbar">
+    <a href="index.html" class="logo">Inhalo.</a>
+    <div class="nav-links">
+      <a href="exercises.html" class="nav-link">Start</a>
+      <a href="blog.html" class="nav-link">Blog</a>
+      <a href="about.html" class="nav-link">About</a>
+      <button id="theme-toggle" class="theme-btn">◐</button>
+    </div>
+  </nav>
+
+  <main class="hero">
+    <h1>Stop. Breathe. Reset. Continue.</h1>
+    <div class="tagline-container">
+      <p class="tagline-text" id="tagline-1">Gentle guided breathing to ground your day.</p>
+      <p class="tagline-text" id="tagline-2">Minimal breathing exercises. Maximum clarity.</p>
+      <p class="tagline-text" id="tagline-3">A quiet tool for busy minds.</p>
+    </div>
+    <a href="exercises.html" class="cta-btn">Begin →</a>
+  </main>
+
+  <script src="js/main.js"></script>
+  <script src="js/music.js"></script>
+  <script>
+    // Tagline rotation functionality
+    function initTaglineRotation() {
+      const taglines = [
+        document.getElementById('tagline-1'),
+        document.getElementById('tagline-2'),
+        document.getElementById('tagline-3')
+      ];
+      
+      let currentTagline = 0;
+      
+      // Make the first tagline visible immediately
+      taglines[0].classList.add('visible');
+      
+      // Set a long interval for a slow, calm rotation
+      setInterval(() => {
+        // Mark current tagline as exiting (slides up and fades out)
+        taglines[currentTagline].classList.remove('visible');
+        taglines[currentTagline].classList.add('exiting');
+        
+        // Move to next tagline
+        currentTagline = (currentTagline + 1) % taglines.length;
+        
+        // Make next tagline visible immediately (it will fade in from below)
+        taglines[currentTagline].classList.add('visible');
+        
+        // Clean up classes after animation completes
+        setTimeout(() => {
+          for (let i = 0; i < taglines.length; i++) {
+            if (i !== currentTagline) {
+              taglines[i].classList.remove('visible', 'exiting');
+            }
+          }
+        }, 2000);
+      }, 8000); // 8 seconds per tagline for a slow, calm rotation
+    }
+    
+    // Initialize tagline rotation when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      initTaglineRotation();
+    });
+  </script>
+</body>
+</html>
